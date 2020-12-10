@@ -430,6 +430,7 @@ class CreationParams {
     this.webSettings,
     this.javascriptChannelNames,
     this.userAgent,
+    this.userAgentSuffix,
     this.autoMediaPlaybackPolicy =
         AutoMediaPlaybackPolicy.require_user_action_for_all_media_types,
   }) : assert(autoMediaPlaybackPolicy != null);
@@ -461,6 +462,8 @@ class CreationParams {
   ///
   /// When null the platform's webview default is used for the User-Agent header.
   final String userAgent;
+
+  final String userAgentSuffix;
 
   /// Which restrictions apply on automatic media playback.
   final AutoMediaPlaybackPolicy autoMediaPlaybackPolicy;

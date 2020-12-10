@@ -115,6 +115,8 @@
     if ([initialUrl isKindOfClass:[NSString class]]) {
       [self loadUrl:initialUrl];
     }
+    NSString* userAgentSuffix = args[@"userAgentSuffix"];
+    [self appendUserAgentSuffix:[userAgentSuffix isEqual:[NSNull null]] ? nil : userAgentSuffix];
   }
   return self;
 }
@@ -332,6 +334,9 @@
     } else if ([key isEqualToString:@"userAgent"]) {
       NSString* userAgent = settings[key];
       [self updateUserAgent:[userAgent isEqual:[NSNull null]] ? nil : userAgent];
+    } else if ([key isEqualToString:@"userAgentSuffix"]) {
+      NSString* userAgentSuffix = settings[key];
+      [self appendUserAgentSuffix:[userAgentSuffix isEqual:[NSNull null]] ? nil : userAgentSuffix];
     } else {
       [unknownKeys addObject:key];
     }
@@ -430,10 +435,22 @@
 }
 
 - (void)updateUserAgent:(NSString*)userAgent {
-  if (@available(iOS 9.0, *)) {
+  if (@available(iOS 9.0, *) && userAgent != nil) {
     [_webView setCustomUserAgent:userAgent];
-  } else {
-    NSLog(@"Updating UserAgent is not supported for Flutter WebViews prior to iOS 9.");
+  }
+}
+
+- (void)appendUserAgentSuffix:(NSString*)userAgentSuffix {
+  if (@available(iOS 9.0, *) && userAgentSuffix != nil) {
+    [_webView evaluateJavaScript:@"navigator.userAgent" completionHandler: ^(id result, NSError *error) {
+      if (error == nil && result != nil) {
+        NSString *oldAgent = [NSString stringWithFormat:@"%@", result];
+        if (oldAgent.length > 2 && ![oldAgent hasSuffix:userAgentSuffix]) {
+          NSString *newAgent = [NSString stringWithFormat:@"%@%@", oldAgent, userAgentSuffix];
+          [_webView setCustomUserAgent:newAgent];
+        }
+      }
+    }];
   }
 }
 
